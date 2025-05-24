@@ -5,6 +5,7 @@ import rateLimit from 'express-rate-limit';
 import axios from 'axios';
 import dotenv from 'dotenv';
 import zxcvbn from 'zxcvbn';
+import cors from 'cors';
 
 dotenv.config();
 
@@ -18,11 +19,22 @@ if (!HIBP_KEY) {
 
 // Middlewares
 app.use(helmet());
+const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? [];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('No permitido por CORS'));
+    }
+  },
+  methods: ['GET', 'POST'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(rateLimit({ windowMs: 1 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));// Limitar a 100 peticiones por minuto
 
-// Ruta para comprobar brechas de email
 app.post('/api/breaches', async (req: Request, res: Response): Promise<void> => {
   const { email } = req.body;
   if (!email) {
