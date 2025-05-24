@@ -19,18 +19,7 @@ if (!HIBP_KEY) {
 
 // Middlewares
 app.use(helmet());
-const allowedOrigins = process.env.ALLOWED_ORIGINS?.split(',') ?? [];
-
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin || allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      callback(new Error('No permitido por CORS'));
-    }
-  },
-  methods: ['GET', 'POST'],
-}));
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(rateLimit({ windowMs: 1 * 60 * 1000, max: 100, standardHeaders: true, legacyHeaders: false }));// Limitar a 100 peticiones por minuto
